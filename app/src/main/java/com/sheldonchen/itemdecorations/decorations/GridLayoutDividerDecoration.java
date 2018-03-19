@@ -19,7 +19,7 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
     /**
      * RecyclerView布局方向.
      */
-    private int mOrientation = GridLayoutManager.VERTICAL;
+    @DecorationOrientType private int mOrientation = GridLayoutManager.VERTICAL;
 
     /**
      * 列表滚动方向上分割线的宽度.
@@ -32,42 +32,42 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
     private int mSideDividerWidth = 10;
 
     /**
-     * 是否画顶部侧边分割线.
+     * 是否画顶部分割线.
      */
     private boolean mDrawTopSideDivider = false;
 
     /**
-     * 是否画底部侧边分割线.
+     * 是否画底部分割线.
      */
     private boolean mDrawBottomSideDivider = false;
 
     /**
-     * 是否画侧边（左侧、上侧）分割线.
+     * 是否画侧边分割线.
      */
-    private boolean mDrawStartSideDivider = false;
-
-    /**
-     * 是否画侧边（右侧、下侧）分割线.
-     */
-    private boolean mDrawEndSideDivider = false;
+    private boolean mDrawSideDivider = false;
 
     /**
      * 分割线颜色.
      */
-    @ColorInt private int mDividerColor = Color.parseColor("#FFCCCCCC");
+    @ColorInt private int mDividerColor = Color.TRANSPARENT;
+
+    /**
+     * 设置是否画分割线的颜色.
+     */
+    private boolean mDrawDividerColor = false;
 
     private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     public GridLayoutDividerDecoration() {
     }
 
-    public GridLayoutDividerDecoration(int mOrientation) {
+    public GridLayoutDividerDecoration(@DecorationOrientType int mOrientation) {
         this.mOrientation = mOrientation;
     }
 
     // set methods.
 
-    public GridLayoutDividerDecoration setOrientation(int orientation) {
+    public GridLayoutDividerDecoration setOrientation(@DecorationOrientType int orientation) {
         this.mOrientation = orientation;
         return this;
     }
@@ -92,59 +92,126 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
         return this;
     }
 
-    public GridLayoutDividerDecoration drawStartSideDivider(boolean drawStartSideDivider) {
-        this.mDrawStartSideDivider = drawStartSideDivider;
-        return this;
-    }
-
-    public GridLayoutDividerDecoration drawEndSideDivider(boolean drawEndSideDivider) {
-        this.mDrawEndSideDivider = drawEndSideDivider;
+    public GridLayoutDividerDecoration drawSideDivider(boolean drawSideDivider) {
+        this.mDrawSideDivider = drawSideDivider;
         return this;
     }
 
     public GridLayoutDividerDecoration setDividerColor(@ColorInt int dividerColor) {
+        this.mDrawDividerColor = true;
         this.mDividerColor = dividerColor;
         return this;
     }
 
+    public GridLayoutDividerDecoration setDrawDividerColor(boolean drawDividerColor) {
+        this.mDrawDividerColor = drawDividerColor;
+        return this;
+    }
+
     @Override
-    public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
-        super.onDraw(c, parent, state);
+    public void onDraw(Canvas canvas, RecyclerView parent, RecyclerView.State state) {
+        super.onDraw(canvas, parent, state);
+        if(!mDrawDividerColor) return;
 
         mPaint.setColor(mDividerColor);
 
-        draw(c, parent);
+        if (mOrientation == GridLayoutManager.VERTICAL) {
+            drawVertical(canvas, parent);
+        } else {
+            drawHorizontal(canvas, parent);
+        }
     }
 
     // draw.
 
-    private void draw(Canvas canvas, RecyclerView parent) {
+    private void drawVertical(Canvas canvas, RecyclerView parent) {
+        int spanCount = getSpanCount(parent);
         int childSize = parent.getChildCount();
         for (int i = 0; i < childSize; i++) {
             View child = parent.getChildAt(i);
             RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams) child.getLayoutParams();
 
-            //画水平分隔线
+            final boolean isFirstColumn = isFirstColumn(parent, i, spanCount);
+
+            // 画水平分隔线.
+            int sideOffset = 0;
+            if(mDrawSideDivider) sideOffset = mSideDividerWidth;
             int left = child.getLeft();
-            int right = child.getRight();
+            if(isFirstColumn) {
+                left = left - sideOffset;
+            }
+            int right = child.getRight() + sideOffset;
             int top = child.getBottom() + layoutParams.bottomMargin;
             int bottom = top + mDividerWidth;
-            if (mPaint != null) {
+            if(!isLastRaw(parent, i , spanCount, childSize) || mDrawBottomSideDivider) {
                 canvas.drawRect(left, top, right, bottom, mPaint);
             }
-            //画垂直分割线
+            if(isFirstRaw(parent, i, spanCount) && mDrawTopSideDivider) {
+                bottom = child.getTop() - layoutParams.topMargin;
+                top = bottom - mDividerWidth;
+                canvas.drawRect(left, top, right, bottom, mPaint);
+            }
+
+            // 画竖直分隔线.
             top = child.getTop();
-            bottom = child.getBottom() + mDividerWidth;
+            bottom = child.getBottom();
             left = child.getRight() + layoutParams.rightMargin;
             right = left + mSideDividerWidth;
-            if (mPaint != null) {
+            if(!isLastColumn(parent, i, spanCount, childSize) || mDrawSideDivider) {
+                canvas.drawRect(left, top, right, bottom, mPaint);
+            }
+            if(isFirstColumn && mDrawSideDivider) {
+                right = child.getLeft() - layoutParams.leftMargin;
+                left = right - mSideDividerWidth;
                 canvas.drawRect(left, top, right, bottom, mPaint);
             }
         }
     }
 
-    @SuppressWarnings("SuspiciousNameCombination")
-    @Override
+    private void drawHorizontal(Canvas canvas, RecyclerView parent) {
+        int spanCount = getSpanCount(parent);
+        int childSize = parent.getChildCount();
+        for (int i = 0; i < childSize; i++) {
+            View child = parent.getChildAt(i);
+            RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams) child.getLayoutParams();
+
+            final boolean isFirstRaw = isFirstRaw(parent, i, spanCount);
+            // 画竖直分隔线.
+            int sideOffset = 0;
+            if(mDrawSideDivider) sideOffset = mSideDividerWidth;
+            int top = child.getTop();
+            if(isFirstRaw) {
+                top = top - sideOffset;
+            }
+            int bottom = child.getBottom() + sideOffset;
+            int left = child.getRight() + layoutParams.rightMargin;
+            int right = left + mDividerWidth;
+            if(!isLastColumn(parent, i, spanCount, childSize) || mDrawBottomSideDivider) {
+                canvas.drawRect(left, top, right, bottom, mPaint);
+            }
+            if(isFirstColumn(parent, i, spanCount) && mDrawTopSideDivider) {
+                right = child.getLeft() - layoutParams.leftMargin;
+                left = right - mDividerWidth;
+                canvas.drawRect(left, top, right, bottom, mPaint);
+            }
+
+            // 画水平分隔线.
+            left = child.getLeft();
+            right = child.getRight();
+            top = child.getBottom() + layoutParams.bottomMargin;
+            bottom = top + mSideDividerWidth;
+            if(!isLastRaw(parent, i, spanCount, childSize) || mDrawSideDivider) {
+                canvas.drawRect(left, top, right, bottom, mPaint);
+            }
+            if(isFirstRaw && mDrawSideDivider) {
+                bottom = child.getTop() - layoutParams.topMargin;
+                top = bottom - mSideDividerWidth;
+                canvas.drawRect(left, top, right, bottom, mPaint);
+            }
+        }
+    }
+
+    @Override @SuppressWarnings("SuspiciousNameCombination")
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
         // 在notifyDataSetChanged()之后并不能马上获取Adapter中的position, 要等布局结束之后才能获取到.
         // 而对于getChildLayoutPosition(), 在notifyItemInserted()之后, Layout不能马上获取到新的position
@@ -156,51 +223,48 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
 
         // 每个item分配到的offset总量.
         int dividerCount = spanCount - 1;
-        if (mDrawStartSideDivider) dividerCount++;
-        if (mDrawEndSideDivider) dividerCount++;
+        if (mDrawSideDivider) dividerCount = dividerCount + 2;
 
+        // 确保每个item分配到的offset总量相等，原理是一个等差数列.
         int eachItemOffsetWidth = dividerCount * mSideDividerWidth / spanCount;
+        int dc = eachItemOffsetWidth - mSideDividerWidth;
 
         int left = 0;
         int top = 0;
-        int right = 0;
-        int bottom = 0;
+        int right;
+        int bottom;
 
         if (mOrientation == GridLayoutManager.VERTICAL) {
-            if (isFirstRaw(parent, itemPosition, spanCount)) {
-                if(mDrawTopSideDivider) {
-                    top = mDividerWidth;
-                }
-                if (isFirstColumn(parent, itemPosition, spanCount)) {
-                    if(mDrawStartSideDivider) {
-                        left = mSideDividerWidth;
-                    }
-                    right = eachItemOffsetWidth - left;
-                    bottom = mDividerWidth;
-                } else if(isLastColumn(parent, itemPosition, spanCount, childCount)) {
-
-                } else {
-
-                }
+            if (isFirstRaw(parent, itemPosition, spanCount) && mDrawTopSideDivider) {
+                top = mDividerWidth;
+            }
+            bottom = mDividerWidth;
+            if (isLastRaw(parent, itemPosition, spanCount, childCount) && !mDrawBottomSideDivider) {
+                bottom = 0;
             }
 
-            outRect.set(left, top, right, bottom);
-        }
+            int a1 = 0;
+            if(mDrawSideDivider) a1 = mSideDividerWidth;
 
-        int dl = mSideDividerWidth - eachItemOffsetWidth;
-
-        left = itemPosition % spanCount * dl;
-        right = eachItemOffsetWidth - left;
-        // noinspection SuspiciousNameCombination
-        bottom = mDividerWidth;
-        if (isLastRaw(parent, itemPosition, spanCount, childCount)) {
-            bottom = 0;
-        }
-        if(mOrientation == GridLayoutManager.VERTICAL) {
-            outRect.set(left, 0, right, bottom);
+            left = a1 - dc * (itemPosition % spanCount);
+            right = eachItemOffsetWidth - left;
         } else {
-            outRect.set(left, 0, right, bottom);
+            if(isFirstColumn(parent, itemPosition, spanCount) && mDrawTopSideDivider) {
+                left = mDividerWidth;
+            }
+            right = mDividerWidth;
+            if(isLastColumn(parent, itemPosition, spanCount, childCount) && !mDrawBottomSideDivider) {
+                right = 0;
+            }
+
+            int a1 = 0;
+            if(mDrawSideDivider) a1 = mSideDividerWidth;
+
+            top = a1 - dc * (itemPosition % spanCount);
+            bottom = eachItemOffsetWidth - top;
         }
+
+        outRect.set(left, top, right, bottom);
     }
 
     // utils.

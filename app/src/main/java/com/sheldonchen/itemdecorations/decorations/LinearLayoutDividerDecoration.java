@@ -1,9 +1,10 @@
 package com.sheldonchen.itemdecorations.decorations;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.support.annotation.ColorRes;
+import android.support.annotation.ColorInt;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -16,7 +17,8 @@ import java.util.Set;
  */
 
 public class LinearLayoutDividerDecoration extends RecyclerView.ItemDecoration {
-    private int mOrientation = LinearLayoutManager.VERTICAL;
+
+    @DecorationOrientType private int mOrientation = LinearLayoutManager.VERTICAL;
 
     /**
      * 分割线宽度.
@@ -43,7 +45,10 @@ public class LinearLayoutDividerDecoration extends RecyclerView.ItemDecoration {
      */
     private boolean mDrawLastDivider = true;
 
-    private int mDividerColorResId = android.R.color.darker_gray;
+    @ColorInt private int mDividerColor = Color.TRANSPARENT;
+
+    private boolean mDrawDividerColor = false;
+
     private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private final Set<Integer> mNonDrawPositions = new HashSet<>();
@@ -54,6 +59,8 @@ public class LinearLayoutDividerDecoration extends RecyclerView.ItemDecoration {
     public LinearLayoutDividerDecoration(@DecorationOrientType int orientation) {
         this.mOrientation = orientation;
     }
+
+    // set methods.
 
     public LinearLayoutDividerDecoration setOrientation(@DecorationOrientType int orientation) {
         this.mOrientation = orientation;
@@ -76,8 +83,9 @@ public class LinearLayoutDividerDecoration extends RecyclerView.ItemDecoration {
         return this;
     }
 
-    public LinearLayoutDividerDecoration setDividerColorResId(@ColorRes int colorResId) {
-        this.mDividerColorResId = colorResId;
+    public LinearLayoutDividerDecoration setDividerColor(@ColorInt int color) {
+        mDrawDividerColor = true;
+        this.mDividerColor = color;
         return this;
     }
 
@@ -96,6 +104,11 @@ public class LinearLayoutDividerDecoration extends RecyclerView.ItemDecoration {
         return this;
     }
 
+    public LinearLayoutDividerDecoration setDrawDividerColor(boolean drawDividerColor) {
+        this.mDrawDividerColor = drawDividerColor;
+        return this;
+    }
+
     /**
      * 指定位置的divider不画，可指定多个位置.
      */
@@ -107,8 +120,8 @@ public class LinearLayoutDividerDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
         super.onDraw(c, parent, state);
-        // noinspection deprecation
-        mPaint.setColor(parent.getContext().getResources().getColor(mDividerColorResId));
+        mPaint.setColor(mDividerColor);
+
         if(mOrientation == LinearLayoutManager.VERTICAL) {
             drawVerticalDivider(c, parent, state);
         } else {
