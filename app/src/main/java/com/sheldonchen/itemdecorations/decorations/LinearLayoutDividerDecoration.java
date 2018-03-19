@@ -120,6 +120,8 @@ public class LinearLayoutDividerDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
         super.onDraw(c, parent, state);
+        if(!mDrawDividerColor) return;
+
         mPaint.setColor(mDividerColor);
 
         if(mOrientation == LinearLayoutManager.VERTICAL) {
