@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * 适用于RecyclerView线性布局下的ItemDecoration
  * Created by cxd on 2017/05/24
  */
 

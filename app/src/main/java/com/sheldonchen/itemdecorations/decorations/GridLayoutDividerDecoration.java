@@ -11,6 +11,8 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
 
 /**
+ * 适用于RecyclerView网格布局以及瀑布流布局下的ItemDecoration
+ * 完美支持网格布局设置了SpanSizeLookup的情况，目前不支持瀑布流布局设置了FullSpan的情况
  * Created by cxd on 2018/3/7
  */
 
@@ -246,8 +248,10 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
             int a1 = 0;
             if(mDrawSideDivider) a1 = mSideDividerWidth;
 
-            left = a1 - dc * (itemPosition % spanCount);
-            right = eachItemOffsetWidth - left;
+            int spanIndex = getSpanIndex(parent, itemPosition, spanCount);
+            int spanLastIndex = spanIndex + getSpanSize(parent, itemPosition) - 1;
+            left = a1 - dc * spanIndex;
+            right = eachItemOffsetWidth - a1 + dc * spanLastIndex;
         } else {
             if(isFirstColumn(parent, itemPosition, spanCount) && mDrawTopSideDivider) {
                 left = mDividerWidth;
@@ -260,11 +264,34 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
             int a1 = 0;
             if(mDrawSideDivider) a1 = mSideDividerWidth;
 
-            top = a1 - dc * (itemPosition % spanCount);
-            bottom = eachItemOffsetWidth - top;
+            int spanIndex = getSpanIndex(parent, itemPosition, spanCount);
+            int spanLastIndex = spanIndex + getSpanSize(parent, itemPosition) - 1;
+            top = a1 - dc * spanIndex;
+            bottom = eachItemOffsetWidth - a1 + dc * spanLastIndex;
         }
 
         outRect.set(left, top, right, bottom);
+    }
+
+    private int getSpanIndex(RecyclerView parent, int pos, int spanCount) {
+        RecyclerView.LayoutManager manager = parent.getLayoutManager();
+        if(manager instanceof GridLayoutManager) {
+            GridLayoutManager.SpanSizeLookup spanSizeLookup =
+                    ((GridLayoutManager) manager).getSpanSizeLookup();
+            return spanSizeLookup.getSpanIndex(pos, spanCount);
+        } else {
+            return pos % spanCount;
+        }
+    }
+
+    private int getSpanSize(RecyclerView parent, int pos) {
+        RecyclerView.LayoutManager manager = parent.getLayoutManager();
+        if(manager instanceof GridLayoutManager) {
+            GridLayoutManager.SpanSizeLookup spanSizeLookup =
+                    ((GridLayoutManager) manager).getSpanSizeLookup();
+            return spanSizeLookup.getSpanSize(pos);
+        }
+        return 1;
     }
 
     // utils.
@@ -274,41 +301,82 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
      */
     private boolean isFirstRaw(RecyclerView parent, int pos, int spanCount){
         RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
-        if (layoutManager instanceof GridLayoutManager || layoutManager instanceof StaggeredGridLayoutManager) {
-            if (mOrientation == GridLayoutManager.VERTICAL) {
-                if(pos < spanCount){
-                    return true;
-                }
-            }else{
-                if(pos % spanCount == 0){
-                    return true;
-                }
+        if(layoutManager instanceof GridLayoutManager) {
+            GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
+            if(mOrientation == GridLayoutManager.VERTICAL
+                    && pos < getGridFirstDividerOffset(parent, gridLayoutManager)) {
+                return true;
+            } else if(mOrientation == GridLayoutManager.HORIZONTAL
+                    && isFirstRowInHorizontalGridLayout(gridLayoutManager, pos)) {
+                return true;
+            }
+        } else if (layoutManager instanceof StaggeredGridLayoutManager) {
+            if (mOrientation == GridLayoutManager.VERTICAL
+                    && pos < spanCount) {
+                return true;
+            }else if(mOrientation == GridLayoutManager.HORIZONTAL
+                    && pos % spanCount == 0){
+                return true;
             }
         }
 
         return false;
     }
+
+    private static int getGridFirstDividerOffset(RecyclerView parent, GridLayoutManager manager) {
+        GridLayoutManager.SpanSizeLookup spanSizeLookup = manager.getSpanSizeLookup();
+        spanSizeLookup.setSpanIndexCacheEnabled(true);
+
+        int spanCount = manager.getSpanCount();
+        int itemCount = parent.getAdapter().getItemCount();
+        for (int i = 1; i < itemCount; i++) {
+            if (spanSizeLookup.getSpanIndex(i, spanCount) == 0) {
+                return i;
+            }
+        }
+
+        return spanCount;
+    }
+
+    private static boolean isFirstRowInHorizontalGridLayout(GridLayoutManager manager, int pos) {
+        GridLayoutManager.SpanSizeLookup spanSizeLookup = manager.getSpanSizeLookup();
+        spanSizeLookup.setSpanIndexCacheEnabled(true);
+
+        int spanCount = manager.getSpanCount();
+        if(spanSizeLookup.getSpanIndex(pos, spanCount) == 0) {
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * 判断是否是第一列.
      */
     private boolean isFirstColumn(RecyclerView parent, int pos, int spanCount){
         RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
-        if (layoutManager instanceof GridLayoutManager || layoutManager instanceof StaggeredGridLayoutManager) {
-            if (mOrientation == GridLayoutManager.VERTICAL) {
-                if(pos % spanCount == 0){
-                    return true;
-                }
-            }else{
-                if(pos < spanCount){
-                    return true;
-                }
+        if(layoutManager instanceof GridLayoutManager) {
+            GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
+            if(mOrientation == GridLayoutManager.VERTICAL
+                    && isFirstRowInHorizontalGridLayout(gridLayoutManager, pos)) {
+                return true;
+            } else if(mOrientation == GridLayoutManager.HORIZONTAL
+                    && pos < getGridFirstDividerOffset(parent, gridLayoutManager)) {
+                return true;
+            }
+
+        } else if (layoutManager instanceof StaggeredGridLayoutManager) {
+            if (mOrientation == GridLayoutManager.VERTICAL
+                    && pos % spanCount == 0) {
+                return true;
+            }else if(mOrientation == GridLayoutManager.HORIZONTAL
+                    && pos < spanCount){
+                return true;
             }
         }
 
         return false;
     }
-
 
     /**
      * 判断是否是最后一列.
@@ -316,15 +384,23 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
     private boolean isLastColumn(RecyclerView parent, int pos, int spanCount, int childCount) {
         RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
         if (layoutManager instanceof GridLayoutManager) {
-            if ((pos + 1) % spanCount == 0) {
+            GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
+            GridLayoutManager.SpanSizeLookup spanSizeLookup = gridLayoutManager.getSpanSizeLookup();
+
+            if(mOrientation == GridLayoutManager.VERTICAL) {
+                if(pos == childCount - 1) {
+                    return spanSizeLookup.getSpanSize(pos) == spanCount;
+                } else if(spanSizeLookup.getSpanIndex(pos + 1, spanCount) == 0){
+                    return true;
+                }
+            } else if(mOrientation == GridLayoutManager.HORIZONTAL
+                    && pos >= getGridLastDividerOffset(parent, gridLayoutManager)){
                 return true;
             }
         } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-            int orientation = ((StaggeredGridLayoutManager) layoutManager).getOrientation();
-            if (orientation == StaggeredGridLayoutManager.VERTICAL) {
-                if ((pos + 1) % spanCount == 0) {
-                    return true;
-                }
+            if (mOrientation == StaggeredGridLayoutManager.VERTICAL
+                    && (pos + 1) % spanCount == 0) {
+                return true;
             } else {
                 childCount = childCount - childCount % spanCount;
                 if (pos >= childCount) {
@@ -334,6 +410,20 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
         }
 
         return false;
+    }
+
+    private int getGridLastDividerOffset(RecyclerView parent, GridLayoutManager manager) {
+        GridLayoutManager.SpanSizeLookup spanSizeLookup = manager.getSpanSizeLookup();
+
+        int spanCount = manager.getSpanCount();
+        int itemCount = parent.getAdapter().getItemCount();
+        for (int i = itemCount - 1; i >= 0; i--) {
+            if (spanSizeLookup.getSpanIndex(i, spanCount) == 0) {
+                return i;
+            }
+        }
+
+        return itemCount - 1;
     }
 
     /**
@@ -342,21 +432,28 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
     private boolean isLastRaw(RecyclerView parent, int pos, int spanCount, int childCount) {
         RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
         if (layoutManager instanceof GridLayoutManager) {
-            childCount = childCount - childCount % spanCount;
-            if (pos >= childCount) {
+            GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
+            GridLayoutManager.SpanSizeLookup spanSizeLookup = gridLayoutManager.getSpanSizeLookup();
+
+            if(mOrientation == GridLayoutManager.VERTICAL
+                    && pos >= getGridLastDividerOffset(parent, gridLayoutManager)) {
                 return true;
+            } else if(mOrientation == GridLayoutManager.HORIZONTAL){
+                if(pos == childCount - 1) {
+                    return spanSizeLookup.getSpanSize(pos) == spanCount;
+                } else if(spanSizeLookup.getSpanIndex(pos + 1, spanCount) == 0){
+                    return true;
+                }
             }
         } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-            int orientation = ((StaggeredGridLayoutManager) layoutManager).getOrientation();
-            if (orientation == StaggeredGridLayoutManager.VERTICAL) {
+            if (mOrientation == StaggeredGridLayoutManager.VERTICAL) {
                 childCount = childCount - childCount % spanCount;
                 if (pos >= childCount) {
                     return true;
                 }
-            } else {
-                if ((pos + 1) % spanCount == 0) {
-                    return true;
-                }
+            } else if(mOrientation == StaggeredGridLayoutManager.HORIZONTAL
+                    && (pos + 1) % spanCount == 0){
+                return true;
             }
         }
 
@@ -374,4 +471,5 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
 
         return spanCount;
     }
+
 }
