@@ -113,8 +113,10 @@ public class LinearLayoutDividerDecoration extends RecyclerView.ItemDecoration {
     /**
      * 指定位置的divider不画，可指定多个位置.
      */
-    public LinearLayoutDividerDecoration notDrawSpecificDivider(int position) {
-        mNonDrawPositions.add(position);
+    public LinearLayoutDividerDecoration notDrawSpecificDivider(int... positions) {
+        for(int pos : positions) {
+            mNonDrawPositions.add(pos);
+        }
         return this;
     }
 
