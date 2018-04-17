@@ -1,219 +1,227 @@
 package com.sheldonchen.itemdecorations.decorations;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
 
+import com.sheldonchen.itemdecorations.annotation.DecorationOrientType;
+import com.sheldonchen.itemdecorations.provider.ColorIntProvider;
+import com.sheldonchen.itemdecorations.provider.DrawableProvider;
+import com.sheldonchen.itemdecorations.provider.base.BaseProvider;
+
 /**
  * 适用于RecyclerView网格布局以及瀑布流布局下的ItemDecoration
- * 完美支持网格布局设置了SpanSizeLookup的情况，目前不支持瀑布流布局设置了FullSpan的情况
+ * 完美支持网格布局设置了SpanSizeLookup的情况
  * Created by cxd on 2018/3/7
  */
 
-public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
+public class GridLayoutDivider extends RecyclerView.ItemDecoration {
+    
+    public static final class Builder {
+        
+        /**
+         * RecyclerView布局方向.
+         */
+        @DecorationOrientType int mOrientation = GridLayoutManager.VERTICAL;
 
-    /**
-     * RecyclerView布局方向.
-     */
-    @DecorationOrientType private int mOrientation = GridLayoutManager.VERTICAL;
+        /**
+         * 列表布局方向上分割线的厚度.
+         */
+        int mDividerThickness = 0;
 
-    /**
-     * 列表滚动方向上分割线的宽度.
-     */
-    private int mDividerWidth = 10;
+        /**
+         * 侧边分割线的厚度.
+         */
+        int mSideDividerThickness = 0;
 
-    /**
-     * 侧边分割线的宽度.
-     */
-    private int mSideDividerWidth = 10;
+        /**
+         * 是否画顶部分割线.
+         */
+        boolean mDrawTopSideDivider = false;
 
-    /**
-     * 是否画顶部分割线.
-     */
-    private boolean mDrawTopSideDivider = false;
+        /**
+         * 是否画底部分割线.
+         */
+        boolean mDrawBottomSideDivider = false;
 
-    /**
-     * 是否画底部分割线.
-     */
-    private boolean mDrawBottomSideDivider = false;
+        /**
+         * 是否画两侧边分割线.
+         */
+        boolean mDrawTwoSidesDivider = false;
 
-    /**
-     * 是否画侧边分割线.
-     */
-    private boolean mDrawSideDivider = false;
+        /**
+         * Provider: 支持Drawable和ColorInt.
+         */
+        BaseProvider<?> mProvider = null;
 
-    /**
-     * 分割线颜色.
-     */
-    @ColorInt private int mDividerColor = Color.TRANSPARENT;
+        /**
+         * Side Provider: 支持Drawable和ColorInt.
+         */
+        BaseProvider<?> mSideProvider = null;
 
-    /**
-     * 设置是否画分割线的颜色.
-     */
-    private boolean mDrawDividerColor = false;
+        public Builder setOrientation(@DecorationOrientType int orientation) {
+            this.mOrientation = orientation;
+            return this;
+        }
 
-    private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        public Builder setDividerThickness(int dividerThickness) {
+            this.mDividerThickness = dividerThickness;
+            return this;
+        }
 
-    public GridLayoutDividerDecoration() {
+        public Builder setSideDividerThickness(int sideDividerThickness) {
+            this.mSideDividerThickness = sideDividerThickness;
+            return this;
+        }
+
+        public Builder drawTopSideDivider(boolean drawTopSideDivider) {
+            this.mDrawTopSideDivider = drawTopSideDivider;
+            return this;
+        }
+
+        public Builder drawBottomSideDivider(boolean drawBottomSideDivider) {
+            this.mDrawBottomSideDivider = drawBottomSideDivider;
+            return this;
+        }
+
+        public Builder drawTwoSidesDivider(boolean drawTwoSidesDivider) {
+            this.mDrawTwoSidesDivider = drawTwoSidesDivider;
+            return this;
+        }
+
+        public Builder setProvider(@NonNull BaseProvider<?> provider, @NonNull BaseProvider<?> sideProvider) {
+            this.mProvider = provider;
+            this.mSideProvider = sideProvider;
+            return this;
+        }
+        
+        public Builder setDividerColor(@ColorInt int dividerColor) {
+            this.mProvider = this.mSideProvider
+                    = new ColorIntProvider(dividerColor);
+            return this;
+        }
+
+        public Builder setSideDividerColor(@ColorInt int dividerColor) {
+            this.mSideProvider = new ColorIntProvider(dividerColor);
+            return this;
+        }
+
+        public Builder setDividerDrawable(@NonNull Drawable drawable, Drawable sideDrawable) {
+            this.mProvider = new DrawableProvider(drawable);
+            this.mSideProvider = new DrawableProvider(sideDrawable);
+            return this;
+        }
+
+        public GridLayoutDivider build() {
+            return new GridLayoutDivider(this);
+        }
     }
 
-    public GridLayoutDividerDecoration(@DecorationOrientType int mOrientation) {
-        this.mOrientation = mOrientation;
-    }
+    private final Builder mBuilder;
 
-    // set methods.
-
-    public GridLayoutDividerDecoration setOrientation(@DecorationOrientType int orientation) {
-        this.mOrientation = orientation;
-        return this;
-    }
-
-    public GridLayoutDividerDecoration setDividerWidth(int dividerWidth) {
-        this.mDividerWidth = dividerWidth;
-        return this;
-    }
-
-    public GridLayoutDividerDecoration setSideDividerWidth(int sideDividerWidth) {
-        this.mSideDividerWidth = sideDividerWidth;
-        return this;
-    }
-
-    public GridLayoutDividerDecoration drawTopSideDivider(boolean drawTopSideDivider) {
-        this.mDrawTopSideDivider = drawTopSideDivider;
-        return this;
-    }
-
-    public GridLayoutDividerDecoration drawBottomSideDivider(boolean drawBottomSideDivider) {
-        this.mDrawBottomSideDivider = drawBottomSideDivider;
-        return this;
-    }
-
-    public GridLayoutDividerDecoration drawSideDivider(boolean drawSideDivider) {
-        this.mDrawSideDivider = drawSideDivider;
-        return this;
-    }
-
-    public GridLayoutDividerDecoration setDividerColor(@ColorInt int dividerColor) {
-        this.mDrawDividerColor = true;
-        this.mDividerColor = dividerColor;
-        return this;
-    }
-
-    public GridLayoutDividerDecoration setDrawDividerColor(boolean drawDividerColor) {
-        this.mDrawDividerColor = drawDividerColor;
-        return this;
+    private GridLayoutDivider(Builder builder) {
+        if(builder == null) {
+            throw new NullPointerException("GridLayoutDivider: mBuilder can't be null.");
+        }
+        this.mBuilder = builder;
     }
 
     @Override
     public void onDraw(Canvas canvas, RecyclerView parent, RecyclerView.State state) {
         super.onDraw(canvas, parent, state);
-        if(!mDrawDividerColor) return;
+        if(mBuilder.mProvider == null
+                || mBuilder.mSideProvider == null) return;
 
-        mPaint.setColor(mDividerColor);
-
-        if (mOrientation == GridLayoutManager.VERTICAL) {
-            drawVertical(canvas, parent);
+        if (mBuilder.mOrientation == GridLayoutManager.VERTICAL) {
+            drawOrientVerticalDivider(canvas, parent);
         } else {
-            drawHorizontal(canvas, parent);
+            drawOrientHorizontalDivider(canvas, parent);
         }
     }
 
-    // draw.
-
-    private void drawVertical(Canvas canvas, RecyclerView parent) {
-        int spanCount = getSpanCount(parent);
-        int childSize = parent.getChildCount();
+    private void drawOrientVerticalDivider(Canvas canvas, RecyclerView parent) {
+        final int spanCount = getSpanCount(parent);
+        final int childSize = parent.getChildCount();
+        
         for (int i = 0; i < childSize; i++) {
             View child = parent.getChildAt(i);
             RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams) child.getLayoutParams();
 
-            final boolean isFirstColumn = isFirstColumn(parent, i, spanCount);
-
             // 画水平分隔线.
-            int sideOffset = 0;
-            if(mDrawSideDivider) sideOffset = mSideDividerWidth;
             int left = child.getLeft();
-            if(isFirstColumn) {
-                left = left - sideOffset;
-            }
-            int right = child.getRight() + sideOffset;
+            int right = child.getRight();
             int top = child.getBottom() + layoutParams.bottomMargin;
-            int bottom = top + mDividerWidth;
-            if(!isLastRaw(parent, i , spanCount, childSize) || mDrawBottomSideDivider) {
-                canvas.drawRect(left, top, right, bottom, mPaint);
+            int bottom = top + mBuilder.mDividerThickness;
+            if(!isLastRaw(parent, i , spanCount, childSize) || mBuilder.mDrawBottomSideDivider) {
+                mBuilder.mProvider.drawDivider(canvas, left, top, right, bottom);
             }
-            if(isFirstRaw(parent, i, spanCount) && mDrawTopSideDivider) {
+            if(mBuilder.mDrawTopSideDivider && isFirstRaw(parent, i, spanCount)) {
                 bottom = child.getTop() - layoutParams.topMargin;
-                top = bottom - mDividerWidth;
-                canvas.drawRect(left, top, right, bottom, mPaint);
+                top = bottom - mBuilder.mDividerThickness;
+                mBuilder.mProvider.drawDivider(canvas, left, top, right, bottom);
             }
 
             // 画竖直分隔线.
             top = child.getTop();
             bottom = child.getBottom();
             left = child.getRight() + layoutParams.rightMargin;
-            right = left + mSideDividerWidth;
-            if(!isLastColumn(parent, i, spanCount, childSize) || mDrawSideDivider) {
-                canvas.drawRect(left, top, right, bottom, mPaint);
+            right = left + mBuilder.mSideDividerThickness;
+            if(!isLastColumn(parent, i, spanCount, childSize) || mBuilder.mDrawTwoSidesDivider) {
+                mBuilder.mSideProvider.drawDivider(canvas, left, top, right, bottom);
             }
-            if(isFirstColumn && mDrawSideDivider) {
+            if(isFirstColumn(parent, i, spanCount) && mBuilder.mDrawTwoSidesDivider) {
                 right = child.getLeft() - layoutParams.leftMargin;
-                left = right - mSideDividerWidth;
-                canvas.drawRect(left, top, right, bottom, mPaint);
+                left = right - mBuilder.mSideDividerThickness;
+                mBuilder.mSideProvider.drawDivider(canvas, left, top, right, bottom);
             }
         }
     }
 
-    private void drawHorizontal(Canvas canvas, RecyclerView parent) {
-        int spanCount = getSpanCount(parent);
-        int childSize = parent.getChildCount();
+    private void drawOrientHorizontalDivider(Canvas canvas, RecyclerView parent) {
+        final int spanCount = getSpanCount(parent);
+        final int childSize = parent.getChildCount();
+
         for (int i = 0; i < childSize; i++) {
             View child = parent.getChildAt(i);
             RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams) child.getLayoutParams();
 
-            final boolean isFirstRaw = isFirstRaw(parent, i, spanCount);
             // 画竖直分隔线.
-            int sideOffset = 0;
-            if(mDrawSideDivider) sideOffset = mSideDividerWidth;
             int top = child.getTop();
-            if(isFirstRaw) {
-                top = top - sideOffset;
-            }
-            int bottom = child.getBottom() + sideOffset;
+            int bottom = child.getBottom();
             int left = child.getRight() + layoutParams.rightMargin;
-            int right = left + mDividerWidth;
-            if(!isLastColumn(parent, i, spanCount, childSize) || mDrawBottomSideDivider) {
-                canvas.drawRect(left, top, right, bottom, mPaint);
+            int right = left + mBuilder.mDividerThickness;
+            if(!isLastColumn(parent, i, spanCount, childSize) || mBuilder.mDrawBottomSideDivider) {
+                mBuilder.mProvider.drawDivider(canvas, left, top, right, bottom);
             }
-            if(isFirstColumn(parent, i, spanCount) && mDrawTopSideDivider) {
+            if(mBuilder.mDrawTopSideDivider && isFirstColumn(parent, i, spanCount)) {
                 right = child.getLeft() - layoutParams.leftMargin;
-                left = right - mDividerWidth;
-                canvas.drawRect(left, top, right, bottom, mPaint);
+                left = right - mBuilder.mDividerThickness;
+                mBuilder.mProvider.drawDivider(canvas, left, top, right, bottom);
             }
 
             // 画水平分隔线.
             left = child.getLeft();
             right = child.getRight();
             top = child.getBottom() + layoutParams.bottomMargin;
-            bottom = top + mSideDividerWidth;
-            if(!isLastRaw(parent, i, spanCount, childSize) || mDrawSideDivider) {
-                canvas.drawRect(left, top, right, bottom, mPaint);
+            bottom = top + mBuilder.mSideDividerThickness;
+            if(!isLastRaw(parent, i, spanCount, childSize) || mBuilder.mDrawTwoSidesDivider) {
+                mBuilder.mSideProvider.drawDivider(canvas, left, top, right, bottom);
             }
-            if(isFirstRaw && mDrawSideDivider) {
+            if(isFirstRaw(parent, i, spanCount) && mBuilder.mDrawTwoSidesDivider) {
                 bottom = child.getTop() - layoutParams.topMargin;
-                top = bottom - mSideDividerWidth;
-                canvas.drawRect(left, top, right, bottom, mPaint);
+                top = bottom - mBuilder.mSideDividerThickness;
+                mBuilder.mSideProvider.drawDivider(canvas, left, top, right, bottom);
             }
         }
     }
 
-    @Override @SuppressWarnings("SuspiciousNameCombination")
+    @Override
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
         // 在notifyDataSetChanged()之后并不能马上获取Adapter中的position, 要等布局结束之后才能获取到.
         // 而对于getChildLayoutPosition(), 在notifyItemInserted()之后, Layout不能马上获取到新的position
@@ -225,44 +233,44 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
 
         // 每个item分配到的offset总量.
         int dividerCount = spanCount - 1;
-        if (mDrawSideDivider) dividerCount = dividerCount + 2;
+        if (mBuilder.mDrawTwoSidesDivider) dividerCount = dividerCount + 2;
 
-        // 确保每个item分配到的offset总量相等，原理是一个等差数列.
-        int eachItemOffsetWidth = dividerCount * mSideDividerWidth / spanCount;
-        int dc = eachItemOffsetWidth - mSideDividerWidth;
+        // 确保每个item分配到的offset总量相等
+        int eachItemOffsetWidth = dividerCount * mBuilder.mSideDividerThickness / spanCount;
+        int dc = eachItemOffsetWidth - mBuilder.mSideDividerThickness;
 
         int left = 0;
         int top = 0;
         int right;
         int bottom;
 
-        if (mOrientation == GridLayoutManager.VERTICAL) {
-            if (isFirstRaw(parent, itemPosition, spanCount) && mDrawTopSideDivider) {
-                top = mDividerWidth;
+        if (mBuilder.mOrientation == GridLayoutManager.VERTICAL) {
+            if (isFirstRaw(parent, itemPosition, spanCount) && mBuilder.mDrawTopSideDivider) {
+                top = mBuilder.mDividerThickness;
             }
-            bottom = mDividerWidth;
-            if (isLastRaw(parent, itemPosition, spanCount, childCount) && !mDrawBottomSideDivider) {
+            bottom = mBuilder.mDividerThickness;
+            if (isLastRaw(parent, itemPosition, spanCount, childCount) && !mBuilder.mDrawBottomSideDivider) {
                 bottom = 0;
             }
 
             int a1 = 0;
-            if(mDrawSideDivider) a1 = mSideDividerWidth;
+            if(mBuilder.mDrawTwoSidesDivider) a1 = mBuilder.mSideDividerThickness;
 
             int spanIndex = getSpanIndex(parent, itemPosition, spanCount);
             int spanLastIndex = spanIndex + getSpanSize(parent, itemPosition) - 1;
             left = a1 - dc * spanIndex;
             right = eachItemOffsetWidth - a1 + dc * spanLastIndex;
         } else {
-            if(isFirstColumn(parent, itemPosition, spanCount) && mDrawTopSideDivider) {
-                left = mDividerWidth;
+            if(isFirstColumn(parent, itemPosition, spanCount) && mBuilder.mDrawTopSideDivider) {
+                left = mBuilder.mDividerThickness;
             }
-            right = mDividerWidth;
-            if(isLastColumn(parent, itemPosition, spanCount, childCount) && !mDrawBottomSideDivider) {
+            right = mBuilder.mDividerThickness;
+            if(isLastColumn(parent, itemPosition, spanCount, childCount) && !mBuilder.mDrawBottomSideDivider) {
                 right = 0;
             }
 
             int a1 = 0;
-            if(mDrawSideDivider) a1 = mSideDividerWidth;
+            if(mBuilder.mDrawTwoSidesDivider) a1 = mBuilder.mSideDividerThickness;
 
             int spanIndex = getSpanIndex(parent, itemPosition, spanCount);
             int spanLastIndex = spanIndex + getSpanSize(parent, itemPosition) - 1;
@@ -303,18 +311,18 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
         RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
         if(layoutManager instanceof GridLayoutManager) {
             GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
-            if(mOrientation == GridLayoutManager.VERTICAL
+            if(mBuilder.mOrientation == GridLayoutManager.VERTICAL
                     && pos < getGridFirstDividerOffset(parent, gridLayoutManager)) {
                 return true;
-            } else if(mOrientation == GridLayoutManager.HORIZONTAL
+            } else if(mBuilder.mOrientation == GridLayoutManager.HORIZONTAL
                     && isFirstRowInHorizontalGridLayout(gridLayoutManager, pos)) {
                 return true;
             }
         } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-            if (mOrientation == GridLayoutManager.VERTICAL
+            if (mBuilder.mOrientation == GridLayoutManager.VERTICAL
                     && pos < spanCount) {
                 return true;
-            }else if(mOrientation == GridLayoutManager.HORIZONTAL
+            }else if(mBuilder.mOrientation == GridLayoutManager.HORIZONTAL
                     && pos % spanCount == 0){
                 return true;
             }
@@ -357,19 +365,19 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
         RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
         if(layoutManager instanceof GridLayoutManager) {
             GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
-            if(mOrientation == GridLayoutManager.VERTICAL
+            if(mBuilder.mOrientation == GridLayoutManager.VERTICAL
                     && isFirstRowInHorizontalGridLayout(gridLayoutManager, pos)) {
                 return true;
-            } else if(mOrientation == GridLayoutManager.HORIZONTAL
+            } else if(mBuilder.mOrientation == GridLayoutManager.HORIZONTAL
                     && pos < getGridFirstDividerOffset(parent, gridLayoutManager)) {
                 return true;
             }
 
         } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-            if (mOrientation == GridLayoutManager.VERTICAL
+            if (mBuilder.mOrientation == GridLayoutManager.VERTICAL
                     && pos % spanCount == 0) {
                 return true;
-            }else if(mOrientation == GridLayoutManager.HORIZONTAL
+            }else if(mBuilder.mOrientation == GridLayoutManager.HORIZONTAL
                     && pos < spanCount){
                 return true;
             }
@@ -387,18 +395,18 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
             GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
             GridLayoutManager.SpanSizeLookup spanSizeLookup = gridLayoutManager.getSpanSizeLookup();
 
-            if(mOrientation == GridLayoutManager.VERTICAL) {
+            if(mBuilder.mOrientation == GridLayoutManager.VERTICAL) {
                 if(pos == childCount - 1) {
                     return spanSizeLookup.getSpanSize(pos) == spanCount;
                 } else if(spanSizeLookup.getSpanIndex(pos + 1, spanCount) == 0){
                     return true;
                 }
-            } else if(mOrientation == GridLayoutManager.HORIZONTAL
+            } else if(mBuilder.mOrientation == GridLayoutManager.HORIZONTAL
                     && pos >= getGridLastDividerOffset(parent, gridLayoutManager)){
                 return true;
             }
         } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-            if (mOrientation == StaggeredGridLayoutManager.VERTICAL
+            if (mBuilder.mOrientation == StaggeredGridLayoutManager.VERTICAL
                     && (pos + 1) % spanCount == 0) {
                 return true;
             } else {
@@ -435,10 +443,10 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
             GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
             GridLayoutManager.SpanSizeLookup spanSizeLookup = gridLayoutManager.getSpanSizeLookup();
 
-            if(mOrientation == GridLayoutManager.VERTICAL
+            if(mBuilder.mOrientation == GridLayoutManager.VERTICAL
                     && pos >= getGridLastDividerOffset(parent, gridLayoutManager)) {
                 return true;
-            } else if(mOrientation == GridLayoutManager.HORIZONTAL){
+            } else if(mBuilder.mOrientation == GridLayoutManager.HORIZONTAL){
                 if(pos == childCount - 1) {
                     return spanSizeLookup.getSpanSize(pos) == spanCount;
                 } else if(spanSizeLookup.getSpanIndex(pos + 1, spanCount) == 0){
@@ -446,12 +454,12 @@ public class GridLayoutDividerDecoration extends RecyclerView.ItemDecoration {
                 }
             }
         } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-            if (mOrientation == StaggeredGridLayoutManager.VERTICAL) {
+            if (mBuilder.mOrientation == StaggeredGridLayoutManager.VERTICAL) {
                 childCount = childCount - childCount % spanCount;
                 if (pos >= childCount) {
                     return true;
                 }
-            } else if(mOrientation == StaggeredGridLayoutManager.HORIZONTAL
+            } else if(mBuilder.mOrientation == StaggeredGridLayoutManager.HORIZONTAL
                     && (pos + 1) % spanCount == 0){
                 return true;
             }

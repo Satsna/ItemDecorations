@@ -1,4 +1,4 @@
-package com.sheldonchen.itemdecorations.decorations;
+package com.sheldonchen.itemdecorations.annotation;
 
 import android.support.annotation.IntDef;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,5 +13,4 @@ import java.lang.annotation.RetentionPolicy;
 @IntDef({LinearLayoutManager.VERTICAL, LinearLayoutManager.HORIZONTAL})
 @Retention(RetentionPolicy.SOURCE)
 public @interface DecorationOrientType {
-
 }
