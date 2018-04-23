@@ -29,7 +29,6 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:26.1.0'
-
     implementation 'com.android.support:recyclerview-v7:26.1.0'
 }
 
@@ -57,9 +56,9 @@ install {
                 }
                 developers {
                     developer {
-                        id 'AchesKkk'
-                        name 'SheldonChen'
-                        email 'aches0922@gmail.com'
+                        id 'aches'
+                        name 'AchesKkk'
+                        email 'SheldonChen0922@gmail.com'
                     }
                 }
 
@@ -125,8 +124,8 @@ bintray {
 
     configurations = ['archives']
     pkg {
-        userOrg = "acheskkk"
-        repo = "itemdecorations"
+        userOrg = "sheldonchen0922"
+        repo = "maven"
         name = "itemdecorations"
         websiteUrl = siteUrl
         vcsUrl = gitUrl

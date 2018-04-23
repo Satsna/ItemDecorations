@@ -25,6 +25,9 @@ Add the dependency
 ```
 dependencies {
         compile 'com.aches.plugin:itemdecorations:1.0.1'
+
+        // 3.0
+        // implementation 'com.aches.plugin:itemdecorations:1.0.1'
 }
 ```
 
