@@ -1,1 +1,1 @@
-include ':app', ':lib-itemdecorations'
+include ':app', ':itemdecorations'

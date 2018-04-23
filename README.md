@@ -13,7 +13,7 @@ ItemDecorations allows you to draw divider between items in recyclerview
   - Horizontal
 - StaggeredGridLayoutManager
 
-## image
+## Image
 <div>
   <img src="gif/S80417-153516.jpg" width = "200" height = "350" hspace = "15"/>
   <img src="gif/S80417-153324.jpg" width = "200" height = "350" hspace = "15"/>
@@ -21,19 +21,10 @@ ItemDecorations allows you to draw divider between items in recyclerview
 </div>
 
 ## Gradle
-Add it in your root build.gradle at the end of repositories:
-```
-allprojects {
-	repositories {
-		...
-		maven { url 'https://jitpack.io' }
-	}
-}
-```
 Add the dependency
 ```
 dependencies {
-  compile 'com.github.AchesKkk:ItemDecorations:v1.0.0'
+        compile 'com.aches.plugin:itemdecorations:1.0.1'
 }
 ```
 
