@@ -1,4 +1,7 @@
 # ItemDecoration for RecyclerView
+
+[![Download](https://api.bintray.com/packages/sheldonchen0922/maven/itemdecorations/images/download.svg) ](https://bintray.com/sheldonchen0922/maven/itemdecorations/_latestVersion)
+
 能够帮助实现RecyclerView分割线效果的ItemDecoration<br>
 支持RecyclerView线性，网格，瀑布流布局
 
