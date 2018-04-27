@@ -11,9 +11,9 @@ import android.view.View;
 
 import com.sheldonchen.itemdecorations.CheckUtil;
 import com.sheldonchen.itemdecorations.annotation.DecorationOrientType;
-import com.sheldonchen.itemdecorations.provider.ColorIntProvider;
-import com.sheldonchen.itemdecorations.provider.DrawableProvider;
-import com.sheldonchen.itemdecorations.provider.base.BaseProvider;
+import com.sheldonchen.itemdecorations.painter.ColorIntPainter;
+import com.sheldonchen.itemdecorations.painter.DrawablePainter;
+import com.sheldonchen.itemdecorations.painter.base.IDividerPainter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -59,9 +59,9 @@ public class LinearLayoutDivider extends RecyclerView.ItemDecoration {
         boolean mDrawLastDivider = false;
 
         /**
-         * Provider: 支持Drawable和ColorInt.
+         * Painter: 支持Drawable和ColorInt.
          */
-        BaseProvider<?> mProvider = null;
+        IDividerPainter mPainter = null;
 
         /**
          * 指定不画分割线的位置的集合(set).
@@ -83,18 +83,18 @@ public class LinearLayoutDivider extends RecyclerView.ItemDecoration {
             return this;
         }
 
-        public Builder setProvider(@NonNull BaseProvider<?> provider) {
-            this.mProvider = provider;
+        public Builder setPainter(@NonNull IDividerPainter painter) {
+            this.mPainter = painter;
             return this;
         }
 
         public Builder setDividerColor(@ColorInt int color) {
-            this.mProvider = new ColorIntProvider(color);
+            this.mPainter = new ColorIntPainter(color);
             return this;
         }
 
         public Builder setDividerDrawable(@NonNull Drawable drawable) {
-            this.mProvider = new DrawableProvider(drawable);
+            this.mPainter = new DrawablePainter(drawable);
             return this;
         }
 
@@ -128,6 +128,21 @@ public class LinearLayoutDivider extends RecyclerView.ItemDecoration {
             return new LinearLayoutDivider(this);
         }
 
+        public void apply(RecyclerView recyclerView) {
+            if(recyclerView == null) return;
+
+            recyclerView.addItemDecoration(build());
+        }
+
+        public void apply(RecyclerView... recyclerViews) {
+            if(recyclerViews == null || recyclerViews.length == 0) return;
+
+            LinearLayoutDivider divider = build();
+            for(RecyclerView recyclerView : recyclerViews) {
+                recyclerView.addItemDecoration(divider);
+            }
+        }
+
     }
 
     private final Builder mBuilder;
@@ -142,7 +157,7 @@ public class LinearLayoutDivider extends RecyclerView.ItemDecoration {
     @Override
     public void onDraw(Canvas canvas, RecyclerView parent, RecyclerView.State state) {
         super.onDraw(canvas, parent, state);
-        if(mBuilder.mProvider == null) return;
+        if(mBuilder.mPainter == null) return;
 
         if(mBuilder.mOrientation == LinearLayoutManager.VERTICAL) {
             drawOrientVerticalDivider(canvas, parent);
@@ -165,13 +180,13 @@ public class LinearLayoutDivider extends RecyclerView.ItemDecoration {
 
             if(i < childCount - 1 || mBuilder.mDrawLastDivider) {
                 if(!mBuilder.mNonDrawPositions.contains(layoutPos)) {
-                    mBuilder.mProvider.drawDivider(canvas, left, top, right, bottom);
+                    mBuilder.mPainter.drawDivider(canvas, left, top, right, bottom);
                 }
             }
             if(i == 0 && mBuilder.mDrawFirstDivider) {
                 bottom = childView.getTop() - params.topMargin;
                 top = bottom - mBuilder.mDividerThickness;
-                mBuilder.mProvider.drawDivider(canvas, left, top, right, bottom);
+                mBuilder.mPainter.drawDivider(canvas, left, top, right, bottom);
             }
         }
     }
@@ -189,13 +204,13 @@ public class LinearLayoutDivider extends RecyclerView.ItemDecoration {
             int right = left + mBuilder.mDividerThickness;
             if(i < childCount - 1 || mBuilder.mDrawLastDivider) {
                 if(!mBuilder.mNonDrawPositions.contains(layoutPos)) {
-                    mBuilder.mProvider.drawDivider(canvas, left, top, right, bottom);
+                    mBuilder.mPainter.drawDivider(canvas, left, top, right, bottom);
                 }
             }
             if(i == 0 && mBuilder.mDrawFirstDivider) {
                 right = childView.getLeft() - params.leftMargin;
                 left = right - mBuilder.mDividerThickness;
-                mBuilder.mProvider.drawDivider(canvas, left, top, right, bottom);
+                mBuilder.mPainter.drawDivider(canvas, left, top, right, bottom);
             }
         }
     }

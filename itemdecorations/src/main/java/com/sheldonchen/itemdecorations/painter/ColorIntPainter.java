@@ -1,21 +1,19 @@
-package com.sheldonchen.itemdecorations.provider;
+package com.sheldonchen.itemdecorations.painter;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.support.annotation.ColorInt;
 
-import com.sheldonchen.itemdecorations.provider.base.BaseProvider;
+import com.sheldonchen.itemdecorations.painter.base.IDividerPainter;
 
 /**
  * Created by cxd on 2018/4/17
  */
 
-public class ColorIntProvider extends BaseProvider<Integer> {
+public class ColorIntPainter implements IDividerPainter {
     private final Paint mPaint;
 
-    public ColorIntProvider(@ColorInt Integer colorInt) {
-        super(colorInt);
-
+    public ColorIntPainter(@ColorInt Integer colorInt) {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.FILL);

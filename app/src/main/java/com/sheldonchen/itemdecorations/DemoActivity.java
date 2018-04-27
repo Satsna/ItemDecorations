@@ -46,7 +46,17 @@ public class DemoActivity extends AppCompatActivity {
             case 1:
                 return new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
             case 2:
-                return new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
+                final GridLayoutManager manager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
+                manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                    @Override
+                    public int getSpanSize(int position) {
+                        if(position == 2 || position == 5) {
+                            return manager.getSpanCount();
+                        }
+                        return 1;
+                    }
+                });
+                return manager;
             case 3:
                 return new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false);
         }
@@ -79,8 +89,6 @@ public class DemoActivity extends AppCompatActivity {
                     .drawTopSideDivider(true)
                     .drawBottomSideDivider(true)
                     .drawTwoSidesDivider(true)
-                    .setDividerColor(Color.parseColor("#FFCCCCCC"))
-                    .setSideDividerColor(Color.parseColor("#FF333333"))
                     .setDividerThickness(15)
                     .setSideDividerThickness(20)
                     .build();

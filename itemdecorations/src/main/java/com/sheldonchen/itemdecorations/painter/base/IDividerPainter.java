@@ -1,4 +1,4 @@
-package com.sheldonchen.itemdecorations.provider.base;
+package com.sheldonchen.itemdecorations.painter.base;
 
 import android.graphics.Canvas;
 
@@ -6,7 +6,7 @@ import android.graphics.Canvas;
  * Created by cxd on 2018/4/17
  */
 
-public interface IDrawDivider {
+public interface IDividerPainter {
 
     void drawDivider(Canvas canvas, int left, int top, int right, int bottom);
 }
