@@ -17,7 +17,7 @@ ItemDecorations allows you to draw divider between items in recyclerview
 <div>
   <img src="gif/S80417-153516.jpg" width = "200" height = "350" hspace = "15"/>
   <img src="gif/S80417-154641.jpg" width = "200" height = "350" hspace = "15"/>
-  <img src="gif/S80427-151850.jpg" width = "200" height = "350" />
+  <img src="gif/S80427-151850.jpg" width = "200" height = "350" hspace = "15"/>
 </div>
 
 ## Gradle
@@ -32,7 +32,7 @@ dependencies {
 ```
 
 ## How To Use
-分割线支持设置Color以及Drawable, 也可以通过实现接口[IDividerPainter](https://github.com/AchesKkk/ItemDecorations/blob/master/lib-itemdecorations/src/main/java/com/sheldonchen/itemdecorations/painter/base/IDividerPainter.java)进行自定义分割线.
+分割线支持设置Color以及Drawable, 也可以通过实现接口[IDividerPainter](https://github.com/AchesKkk/ItemDecorations/blob/master/itemdecorations/src/main/java/com/sheldonchen/itemdecorations/painter/base/IDividerPainter.java)进行自定义分割线.
 ```
 Drawable dividerDrawable = getResources().getDrawable(R.drawable.shape_divider_vertical);
 int dividerColor = getResources().getColor(R.color.divider);
