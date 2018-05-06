@@ -1,6 +1,6 @@
 # Divider(ItemDecoration) for RecyclerView
 
-[![Download](https://api.bintray.com/packages/sheldonchen0922/maven/itemdecorations/images/download.svg) ](https://bintray.com/sheldonchen0922/maven/itemdecorations/_latestVersion)
+[![Download](https://api.bintray.com/packages/sheldonchen0922/plugin/recyclerview-divider/images/download.svg)](https://bintray.com/sheldonchen0922/plugin/recyclerview-divider/_latestVersion)
 
 能够帮助实现RecyclerView分割线效果的ItemDecoration<br>
 支持RecyclerView线性，网格，瀑布流布局
@@ -27,10 +27,10 @@ Android library helps you to draw divider(ItemDecoration) between items in Recyc
 Add the dependency
 ```
 dependencies {
-    compile 'com.aches.plugin:itemdecorations:1.0.2'
+    compile 'com.aches.plugins:recyclerview-divider:1.0.0'
 
     // 3.0
-    // implementation 'com.aches.plugin:itemdecorations:1.0.2'
+    // implementation 'com.aches.plugins:recyclerview-divider:1.0.0'
 }
 ```
 

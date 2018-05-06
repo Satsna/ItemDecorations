@@ -1,1 +1,1 @@
-include ':app', ':itemdecorations'
+include ':app', ':recyclerview-divider'
