@@ -35,7 +35,7 @@ dependencies {
 ```
 
 ## How To Use
-分割线支持设置Color以及Drawable, 也可以通过实现接口[IDividerPainter](https://github.com/AchesKkk/ItemDecorations/blob/master/itemdecorations/src/main/java/com/sheldonchen/itemdecorations/painter/base/IDividerPainter.java)进行自定义分割线.
+分割线支持设置Color以及Drawable, 也可以通过实现接口[IDividerPainter](https://github.com/AchesKkk/ItemDecorations/blob/master/recyclerview-divider/src/main/java/com/sheldonchen/itemdecorations/painter/base/IDividerPainter.java)进行自定义分割线.
 ```
 Drawable dividerDrawable = getResources().getDrawable(R.drawable.shape_divider_vertical);
 int dividerColor = getResources().getColor(R.color.divider);
